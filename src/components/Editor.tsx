@@ -77,20 +77,52 @@ export default function Editor() {
     const leftStyle = isMobile || viewMode !== "split" ? {} : { flexBasis: `${leftWidth}%` };
     const rightStyle = isMobile || viewMode !== "split" ? {} : { flexBasis: `${100 - leftWidth}%` };
 
+    // Theme state and effect
+    const [theme, setTheme] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('theme');
+            if (stored) return stored;
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+        }
+        return 'light';
+    });
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            localStorage.setItem('theme', theme);
+        }
+    }, [theme]);
+
     return (
         <div className="flex flex-col h-full">
             {/* Toolbar */}
-            <div className="flex items-center justify-between px-4 h-16 border-b bg-white dark:bg-gray-900 dark:border-gray-700">
-                <h1 className="text-lg font-semibold">Inkframe</h1>
-                <div className="space-x-2">
+            <div className="flex items-center justify-between px-4 h-16 border-b-2 border-primary dark:border-b dark:border-surfaceDark bg-background dark:bg-backgroundDark">
+                <h1 className="text-lg font-semibold text-primary dark:text-primaryDark">Inkframe</h1>
+                <div className="space-x-2 flex items-center">
+                    <button
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="p-2 rounded border border-surface dark:border-surfaceDark bg-surface dark:bg-surfaceDark text-accent dark:text-accentDark hover:bg-primary hover:text-white dark:hover:bg-primaryDark dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark"
+                        aria-label="Toggle dark mode"
+                        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    >
+                        {theme === 'dark' ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.95l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.05l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" /></svg>
+                        )}
+                    </button>
                     {['write', 'preview', 'split'].map((mode) => (
                         <button
                             key={mode}
                             onClick={() => setViewMode(mode as ViewMode)}
-                            className={`px-3 py-1 rounded text-sm ${
+                            className={`px-3 py-1 rounded text-sm border border-surface dark:border-surfaceDark transition-colors focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark ${
                                 viewMode === mode
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+                                    ? 'bg-primary text-white dark:bg-primaryDark'
+                                    : 'bg-surface text-text dark:bg-surfaceDark dark:text-textDark'
                             }`}
                         >
                             {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -101,7 +133,7 @@ export default function Editor() {
             {/* Editor + Preview */}
             <div
                 id="split-container"
-                className={`flex flex-1 h-0 ${isMobile ? "flex-col" : "flex-row"} overflow-hidden bg-gray-900 dark:bg-gray-950`}
+                className={`flex flex-1 h-0 ${isMobile ? "flex-col" : "flex-row"} overflow-hidden bg-background dark:bg-backgroundDark`}
             >
                 {viewMode === "split" && (
                     <>
@@ -110,35 +142,36 @@ export default function Editor() {
                             style={leftStyle}
                         >
                             <textarea
-                                className="w-full h-full p-4 font-mono text-lg resize-none bg-transparent text-white outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full h-full p-6 font-mono text-lg resize-none bg-transparent text-text dark:text-textDark outline-none focus:ring-2 focus:ring-blue-400"
                                 value={markdown}
                                 onChange={(e) => setMarkdown(e.target.value)}
                                 aria-label="Markdown editor"
                             />
                         </div>
                         <div
-                            className="gutter gutter-horizontal flex items-center justify-center cursor-col-resize bg-gray-800 hover:bg-blue-600 transition w-2"
+                            className="gutter gutter-horizontal flex items-center justify-center cursor-col-resize bg-primary dark:bg-surfaceDark border-l-0 dark:border-l dark:border-surfaceDark"
+                            style={{ zIndex: 10, width: '0.25rem' }}
                             onMouseDown={onMouseDown}
                             onDoubleClick={() => setLeftWidth(50)}
-                            style={{ zIndex: 10 }}
                             aria-label="Resize editor and preview"
                             role="separator"
                             tabIndex={0}
                         />
                         <div
-                            className="min-w-0 h-full bg-transparent flex flex-col items-center justify-start pt-8 pb-8 px-4"
+                            className="min-w-0 h-full bg-transparent flex flex-col items-center justify-start pb-8 px-4"
                             style={rightStyle}
                         >
-                            <div className="w-full max-w-4xl p-6 prose prose-blue dark:prose-invert bg-transparent rounded-lg shadow-md overflow-y-auto">
+                            <div className="w-full max-w-4xl p-6 prose prose-accent dark:prose-invert bg-transparent rounded-lg overflow-y-auto"
+                            >
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
                             </div>
                         </div>
                     </>
                 )}
                 {viewMode === "write" && (
-                    <div className="w-full h-full flex flex-col items-center justify-start pt-8 pb-8 px-4">
+                    <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4">
                         <textarea
-                            className="w-full h-full max-w-4xl max-h-full p-6 font-mono text-lg resize-none bg-transparent text-white outline-none focus:ring-2 focus:ring-blue-400 rounded-lg shadow-md"
+                            className="max-w-4xl w-full h-full p-6 font-mono text-lg resize-none bg-surface dark:bg-surfaceDark text-text dark:text-textDark outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark rounded-lg shadow-md border border-surface dark:border-surfaceDark"
                             value={markdown}
                             onChange={(e) => setMarkdown(e.target.value)}
                             aria-label="Markdown editor"
@@ -146,8 +179,8 @@ export default function Editor() {
                     </div>
                 )}
                 {viewMode === "preview" && (
-                    <div className="w-full flex flex-col items-center justify-start pt-8 pb-8 px-4 overflow-y-auto">
-                        <div className="w-full max-w-4xl p-6 prose prose-blue dark:prose-invert bg-transparent rounded-lg shadow-md overflow-y-auto">
+                    <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4 overflow-y-auto">
+                        <div className="max-w-4xl w-full h-full p-6 prose prose-accent dark:prose-invert bg-surface dark:bg-surfaceDark rounded-lg shadow-md overflow-y-auto border border-surface dark:border-surfaceDark">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
                         </div>
                     </div>
