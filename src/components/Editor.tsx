@@ -121,7 +121,7 @@ export default function Editor() {
                             className="min-w-0 h-full bg-transparent flex flex-col"
                             style={rightStyle}
                         >
-                            <div className="w-full h-full p-4 overflow-y-auto prose prose-blue dark:prose-invert bg-transparent">
+                            <div className="w-full h-full p-4 overflow-y-auto bg-transparent">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {markdown}
                                 </ReactMarkdown>
@@ -141,10 +141,8 @@ export default function Editor() {
                 )}
                 {viewMode === "preview" && (
                     <div className="w-full h-full flex flex-col items-center justify-start pt-8 pb-8 px-4 overflow-y-auto">
-                        <div className="w-full h-full max-w-4xl max-h-full p-6 prose prose-blue dark:prose-invert bg-transparent rounded-lg shadow-md overflow-y-auto">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {markdown}
-                            </ReactMarkdown>
+                        <div className="w-full h-full max-w-4xl max-h-full p-6 bg-transparent rounded-lg shadow-md overflow-y-auto">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
                         </div>
                     </div>
                 )}
