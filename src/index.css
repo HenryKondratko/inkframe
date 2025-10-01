@@ -28,8 +28,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -58,6 +56,30 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.split {
+  display: flex;
+  flex: 1 1 0%;
+  height: 100%;
+  width: 100%;
+}
+.split .gutter {
+  background-color: #222c3d;
+  background-clip: padding-box;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.split .gutter.gutter-horizontal {
+  cursor: col-resize;
+  width: 8px;
+}
+.split .gutter.gutter-vertical {
+  cursor: row-resize;
+  height: 8px;
+}
+.split .gutter:hover {
+  background-color: #3b82f6;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -69,4 +91,8 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+html, body, #root {
+  height: 100%;
 }
