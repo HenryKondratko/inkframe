@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Sidebar from "./Sidebar.tsx";
+import { v4 as uuidv4 } from "uuid";
 
 const initialMarkdown = `# Welcome to Inkframe ✍️
 
@@ -21,7 +23,31 @@ This is your minimalist markdown editor.
 type ViewMode = "write" | "preview" | "split";
 
 export default function Editor() {
-    const [markdown, setMarkdown] = useState(initialMarkdown);
+    // Remove: const [markdown, setMarkdown] = useState(initialMarkdown);
+    // Add document state
+    const [documents, setDocuments] = useState([
+        { id: "1", title: "Welcome.md", content: initialMarkdown },
+    ]);
+    const [activeDocumentId, setActiveDocumentId] = useState("1");
+    const activeDoc = documents.find((doc) => doc.id === activeDocumentId);
+
+    function handleSelectDocument(id: string) {
+        setActiveDocumentId(id);
+    }
+    function handleNewFile() {
+        const newId = uuidv4();
+        const newDoc = { id: newId, title: `Untitled ${documents.length + 1}.md`, content: initialMarkdown };
+        setDocuments((docs) => [...docs, newDoc]);
+        setActiveDocumentId(newId);
+    }
+    function handleChangeContent(newContent: string) {
+        setDocuments((docs) =>
+            docs.map((doc) =>
+                doc.id === activeDocumentId ? { ...doc, content: newContent } : doc
+            )
+        );
+    }
+
     const [viewMode, setViewMode] = useState<ViewMode>("split");
     const [leftWidth, setLeftWidth] = useState(50); // percent
     const [dragging, setDragging] = useState(false);
@@ -97,6 +123,13 @@ export default function Editor() {
         }
     }, [theme]);
 
+    useEffect(() => {
+        console.log('activeDoc:', activeDoc);
+        if (activeDoc) {
+            console.log('activeDoc.content:', JSON.stringify(activeDoc.content));
+        }
+    }, [activeDoc]);
+
     return (
         <div className="flex flex-col h-full">
             {/* Toolbar */}
@@ -130,61 +163,77 @@ export default function Editor() {
                     ))}
                 </div>
             </div>
-            {/* Editor + Preview */}
-            <div
-                id="split-container"
-                className={`flex flex-1 h-0 ${isMobile ? "flex-col" : "flex-row"} overflow-hidden bg-background dark:bg-backgroundDark`}
-            >
-                {viewMode === "split" && (
-                    <>
-                        <div
-                            className="min-w-0 h-full bg-transparent flex flex-col"
-                            style={leftStyle}
-                        >
-                            <textarea
-                                className="w-full h-full p-6 font-mono text-lg resize-none bg-transparent text-text dark:text-textDark outline-none focus:ring-2 focus:ring-blue-400"
-                                value={markdown}
-                                onChange={(e) => setMarkdown(e.target.value)}
-                                aria-label="Markdown editor"
-                            />
-                        </div>
-                        <div
-                            className="gutter gutter-horizontal flex items-center justify-center cursor-col-resize bg-primary dark:bg-surfaceDark border-l-0 dark:border-l dark:border-surfaceDark"
-                            style={{ zIndex: 10, width: '0.25rem' }}
-                            onMouseDown={onMouseDown}
-                            onDoubleClick={() => setLeftWidth(50)}
-                            aria-label="Resize editor and preview"
-                            role="separator"
-                            tabIndex={0}
-                        />
-                        <div
-                            className="min-w-0 h-full bg-transparent flex flex-col items-center justify-start pb-8 px-4"
-                            style={rightStyle}
-                        >
-                            <div className="w-full max-w-4xl p-6 prose prose-accent dark:prose-invert bg-transparent rounded-lg overflow-y-auto"
-                            >
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+            {/* Main content: Sidebar + Editor */}
+            <div className="flex flex-row flex-1 h-full w-full">
+                {/* Sidebar */}
+                <div className="w-56 flex-shrink-0 h-full">
+                    <Sidebar
+                        documents={documents.map(({ id, title }) => ({ id, title }))}
+                        activeDocumentId={activeDocumentId}
+                        onSelect={handleSelectDocument}
+                        onNewFile={handleNewFile}
+                    />
+                </div>
+                {/* Editor + Preview */}
+                <div className="flex-1 flex flex-col h-full">
+                    <div
+                        id="split-container"
+                        className={`flex flex-1 h-0 ${isMobile ? "flex-col" : "flex-row"} overflow-hidden bg-background dark:bg-backgroundDark`}
+                    >
+                        {viewMode === "split" && (
+                            <>
+                                <div
+                                    className="min-w-0 h-full bg-transparent flex flex-col"
+                                    style={leftStyle}
+                                >
+                                    <textarea
+                                        className="w-full h-full p-6 font-mono text-lg resize-none bg-transparent text-text dark:text-textDark outline-none focus:ring-2 focus:ring-blue-400"
+                                        value={activeDoc && typeof activeDoc.content === 'string' ? activeDoc.content : ""}
+                                        onChange={activeDoc ? (e) => handleChangeContent(e.target.value) : () => {}}
+                                        aria-label="Markdown editor"
+                                        placeholder="Type your markdown here..."
+                                    />
+                                </div>
+                                <div
+                                    className="gutter gutter-horizontal flex items-center justify-center cursor-col-resize bg-primary dark:bg-surfaceDark border-l-0 dark:border-l dark:border-surfaceDark"
+                                    style={{ zIndex: 10, width: '0.25rem' }}
+                                    onMouseDown={onMouseDown}
+                                    onDoubleClick={() => setLeftWidth(50)}
+                                    aria-label="Resize editor and preview"
+                                    role="separator"
+                                    tabIndex={0}
+                                />
+                                <div
+                                    className="min-w-0 h-full bg-transparent flex flex-col items-center justify-start pb-8 px-4"
+                                    style={rightStyle}
+                                >
+                                    <div className="w-full max-w-4xl p-6 prose prose-accent dark:prose-invert bg-transparent rounded-lg overflow-y-auto"
+                                    >
+                                        {activeDoc && <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeDoc.content}</ReactMarkdown>}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        {viewMode === "write" && (
+                            <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4">
+                                <textarea
+                                    className="max-w-4xl w-full h-full p-6 font-mono text-lg resize-none bg-surface dark:bg-surfaceDark text-text dark:text-textDark outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark rounded-lg shadow-md border border-surface dark:border-surfaceDark"
+                                    value={activeDoc && typeof activeDoc.content === 'string' ? activeDoc.content : ""}
+                                    onChange={activeDoc ? (e) => handleChangeContent(e.target.value) : () => {}}
+                                    aria-label="Markdown editor"
+                                    placeholder="Type your markdown here..."
+                                />
                             </div>
-                        </div>
-                    </>
-                )}
-                {viewMode === "write" && (
-                    <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4">
-                        <textarea
-                            className="max-w-4xl w-full h-full p-6 font-mono text-lg resize-none bg-surface dark:bg-surfaceDark text-text dark:text-textDark outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark rounded-lg shadow-md border border-surface dark:border-surfaceDark"
-                            value={markdown}
-                            onChange={(e) => setMarkdown(e.target.value)}
-                            aria-label="Markdown editor"
-                        />
+                        )}
+                        {viewMode === "preview" && (
+                            <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4 overflow-y-auto">
+                                <div className="max-w-4xl w-full h-full p-6 prose prose-accent dark:prose-invert bg-surface dark:bg-surfaceDark rounded-lg shadow-md overflow-y-auto border border-surface dark:border-surfaceDark">
+                                    {activeDoc && <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeDoc.content}</ReactMarkdown>}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
-                {viewMode === "preview" && (
-                    <div className="flex flex-1 h-full items-start justify-center pt-8 pb-8 px-4 overflow-y-auto">
-                        <div className="max-w-4xl w-full h-full p-6 prose prose-accent dark:prose-invert bg-surface dark:bg-surfaceDark rounded-lg shadow-md overflow-y-auto border border-surface dark:border-surfaceDark">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-                        </div>
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );
