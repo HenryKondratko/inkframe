@@ -47,6 +47,9 @@ export default function Editor() {
             )
         );
     }
+    function handleRenameDocument(id: string, newTitle: string) {
+        setDocuments(docs => docs.map(doc => doc.id === id ? { ...doc, title: newTitle } : doc));
+    }
 
     const [viewMode, setViewMode] = useState<ViewMode>("split");
     const [leftWidth, setLeftWidth] = useState(50); // percent
@@ -172,6 +175,7 @@ export default function Editor() {
                         activeDocumentId={activeDocumentId}
                         onSelect={handleSelectDocument}
                         onNewFile={handleNewFile}
+                        onRename={handleRenameDocument}
                     />
                 </div>
                 {/* Editor + Preview */}
