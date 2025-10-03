@@ -12,9 +12,10 @@ interface SidebarProps {
     onNewFile: () => void;
     onRename: (id: string, newTitle: string) => void;
     onDelete: (id: string) => void;
+    onDownload?: (id: string) => void; // Added download handler
 }
 
-export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFile, onRename, onDelete, open = true, setOpen }: SidebarProps & { open?: boolean, setOpen?: (open: boolean) => void }) {
+export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFile, onRename, onDelete, onDownload, open = true, setOpen }: SidebarProps & { open?: boolean, setOpen?: (open: boolean) => void }) {
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState("");
 
@@ -94,6 +95,17 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                                                 </svg>
                                             </button>
                                         )}
+                                        {/* Download button, always shown on hover */}
+                                        <button
+                                            className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900"
+                                            title="Download file"
+                                            onClick={e => { e.stopPropagation(); onDownload && onDownload(doc.id); }}
+                                            tabIndex={-1}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v9m0 0l3-3m-3 3l-3-3m9 9H3" />
+                                            </svg>
+                                        </button>
                                     </>
                                 )}
                             </li>

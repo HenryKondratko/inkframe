@@ -174,6 +174,27 @@ export default function Editor() {
         }
     }, [theme]);
 
+    // Download functionality for any document
+    function handleDownload(docId: string) {
+        const doc = documents.find(d => d.id === docId);
+        if (!doc) return;
+        let filename = doc.title || 'document.md';
+        if (!filename.toLowerCase().endsWith('.md')) {
+            filename += '.md';
+        }
+        const blob = new Blob([doc.content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    }
+
     // Save to localStorage on change
     useEffect(() => {
         try {
@@ -223,6 +244,7 @@ export default function Editor() {
                             {mode.charAt(0).toUpperCase() + mode.slice(1)}
                         </button>
                     ))}
+                    {/* Download button removed from toolbar */}
                 </div>
             </div>
             {/* Main content: Sidebar + Editor */}
@@ -235,6 +257,7 @@ export default function Editor() {
                     onNewFile={handleNewFile}
                     onRename={handleRenameDocument}
                     onDelete={handleDeleteDocument}
+                    onDownload={handleDownload}
                     open={sidebarOpen}
                     setOpen={setSidebarOpen}
                 />
