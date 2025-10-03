@@ -22,13 +22,39 @@ This is your minimalist markdown editor.
 
 type ViewMode = "write" | "preview" | "split";
 
+// LocalStorage keys
+const STORAGE_KEY_DOCS = 'inkframe.documents';
+const STORAGE_KEY_ACTIVE = 'inkframe.activeDocumentId';
+
+function getInitialDocuments() {
+    try {
+        const docsRaw = localStorage.getItem(STORAGE_KEY_DOCS);
+        if (docsRaw) {
+            const docs = JSON.parse(docsRaw);
+            if (Array.isArray(docs) && docs.length > 0 && docs[0].id && docs[0].title && docs[0].content !== undefined) {
+                return docs;
+            }
+        }
+    } catch {}
+    return [{ id: "1", title: "Welcome.md", content: initialMarkdown }];
+}
+function getInitialActiveId(docs: {id: string}[]) {
+    try {
+        const activeRaw = localStorage.getItem(STORAGE_KEY_ACTIVE);
+        if (activeRaw && docs.some(d => d.id === activeRaw)) {
+            return activeRaw;
+        }
+    } catch {}
+    const [firstDoc] = docs;
+    if (firstDoc && firstDoc.id) {
+        return firstDoc.id;
+    }
+    return "1"; // fallback if docs is empty
+}
+
 export default function Editor() {
-    // Remove: const [markdown, setMarkdown] = useState(initialMarkdown);
-    // Add document state
-    const [documents, setDocuments] = useState([
-        { id: "1", title: "Welcome.md", content: initialMarkdown },
-    ]);
-    const [activeDocumentId, setActiveDocumentId] = useState("1");
+    const [documents, setDocuments] = useState(getInitialDocuments);
+    const [activeDocumentId, setActiveDocumentId] = useState(() => getInitialActiveId(getInitialDocuments()));
     const activeDoc = documents.find((doc) => doc.id === activeDocumentId);
 
     function handleSelectDocument(id: string) {
@@ -125,6 +151,17 @@ export default function Editor() {
             localStorage.setItem('theme', theme);
         }
     }, [theme]);
+
+    // Save to localStorage on change
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(documents));
+            localStorage.setItem(STORAGE_KEY_ACTIVE, activeDocumentId);
+        } catch (e) {
+            // Ignore quota errors
+            console.warn('Failed to save Inkframe docs to localStorage:', e);
+        }
+    }, [documents, activeDocumentId]);
 
     useEffect(() => {
         console.log('activeDoc:', activeDoc);
