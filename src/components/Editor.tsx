@@ -206,6 +206,14 @@ export default function Editor() {
         }, 0);
     }
 
+    // Word count calculation
+    function getWordCount(text: string): number {
+        if (!text) return 0;
+        // Match words (alphanumeric, unicode, apostrophes)
+        return (text.match(/\b\w+\b/g) || []).length;
+    }
+    const wordCount = getWordCount(activeDoc?.content || "");
+
     // Save to localStorage on change
     useEffect(() => {
         try {
@@ -274,7 +282,7 @@ export default function Editor() {
                     setOpen={setSidebarOpen}
                 />
                 {/* Editor + Preview */}
-                <div className="flex-1 flex flex-col h-full">
+                <div className="flex-1 flex flex-col h-full relative">
                     <div
                         id="split-container"
                         className={`flex flex-1 h-0 ${isMobile ? "flex-col" : "flex-row"} overflow-hidden bg-background dark:bg-backgroundDark`}
@@ -331,6 +339,13 @@ export default function Editor() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                    {/* Word count UI */}
+                    <div
+                        className="absolute bottom-4 right-4 bg-surface dark:bg-surfaceDark text-xs text-text dark:text-textDark px-3 py-1 rounded-full shadow-md border border-surface dark:border-surfaceDark select-none pointer-events-none z-20"
+                        aria-label="Word count"
+                    >
+                        {wordCount} word{wordCount === 1 ? '' : 's'}
                     </div>
                 </div>
             </div>
