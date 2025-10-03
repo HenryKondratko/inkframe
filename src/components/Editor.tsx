@@ -25,6 +25,7 @@ type ViewMode = "write" | "preview" | "split";
 // LocalStorage keys
 const STORAGE_KEY_DOCS = 'inkframe.documents';
 const STORAGE_KEY_ACTIVE = 'inkframe.activeDocumentId';
+const SIDEBAR_OPEN_KEY = 'inkframe.sidebarOpen';
 
 function getInitialDocuments() {
     try {
@@ -55,6 +56,13 @@ function getInitialActiveId(docs: {id: string}[]) {
 export default function Editor() {
     const [documents, setDocuments] = useState(getInitialDocuments);
     const [activeDocumentId, setActiveDocumentId] = useState(() => getInitialActiveId(getInitialDocuments()));
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        try {
+            const stored = localStorage.getItem(SIDEBAR_OPEN_KEY);
+            if (stored !== null) return stored === 'true';
+        } catch {}
+        return true;
+    });
     const activeDoc = documents.find((doc) => doc.id === activeDocumentId);
 
     function handleSelectDocument(id: string) {
@@ -220,16 +228,16 @@ export default function Editor() {
             {/* Main content: Sidebar + Editor */}
             <div className="flex flex-row flex-1 h-full w-full">
                 {/* Sidebar */}
-                <div className="w-56 flex-shrink-0 h-full">
-                    <Sidebar
-                        documents={documents.map(({ id, title }) => ({ id, title }))}
-                        activeDocumentId={activeDocumentId}
-                        onSelect={handleSelectDocument}
-                        onNewFile={handleNewFile}
-                        onRename={handleRenameDocument}
-                        onDelete={handleDeleteDocument}
-                    />
-                </div>
+                <Sidebar
+                    documents={documents.map(({ id, title }) => ({ id, title }))}
+                    activeDocumentId={activeDocumentId}
+                    onSelect={handleSelectDocument}
+                    onNewFile={handleNewFile}
+                    onRename={handleRenameDocument}
+                    onDelete={handleDeleteDocument}
+                    open={sidebarOpen}
+                    setOpen={setSidebarOpen}
+                />
                 {/* Editor + Preview */}
                 <div className="flex-1 flex flex-col h-full">
                     <div
