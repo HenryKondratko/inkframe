@@ -8,16 +8,120 @@ const initialMarkdown = `# Welcome to Inkframe ✍️
 
 This is your minimalist markdown editor.
 
-- Write on the left
-- Preview on the right
-- Toggle views at the top
+---
 
-# Heading
+# Basic Markdown Syntax
 
-- Item 1
-- Item 2
+## Headings
 
-**Bold** _Italic_ [Link](https://example.com)
+# H1
+## H2
+### H3
+#### H4
+##### H5
+###### H6
+
+## Emphasis
+
+*Italic* or _Italic_
+**Bold** or __Bold__
+***Bold and Italic***
+
+## Lists
+
+- Unordered item 1
+- Unordered item 2
+  - Nested item
+1. Ordered item 1
+2. Ordered item 2
+
+## Links
+
+[Inkframe](https://inkframe.app)
+
+## Images
+
+![React Logo](./assets/react.svg)
+
+## Blockquote
+
+> This is a blockquote.
+
+## Inline Code
+
+Here is some \`inline code\`.
+
+## Code Block
+
+\`\`\`js
+function greet() {
+  console.log('Hello, world!');
+}
+\`\`\`
+
+## Horizontal Rule
+
+---
+
+# Extended Markdown Syntax
+
+## Table
+
+| Syntax | Description |
+| ------ | ----------- |
+| Header | Title       |
+| Paragraph | Text     |
+
+## Fenced Code Block
+
+\`\`\`json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25
+}
+\`\`\`
+
+## Footnote
+
+Here's a sentence with a footnote. [^1]
+
+[^1]: This is the footnote.
+
+## Heading ID
+
+### My Great Heading {#custom-id}
+
+## Definition List
+
+term
+: definition
+
+## Strikethrough
+
+~~The world is flat.~~
+
+## Task List
+
+- [x] Write the press release
+- [ ] Update the website
+- [ ] Contact the media
+
+## Emoji
+
+That is so funny! :joy:
+
+## Highlight
+
+I need to highlight these ==very important words==.
+
+## Subscript
+
+H~2~O
+
+## Superscript
+
+X^2^
 `;
 
 type ViewMode = "write" | "preview" | "split";
