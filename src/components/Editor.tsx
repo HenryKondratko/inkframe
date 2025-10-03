@@ -76,6 +76,20 @@ export default function Editor() {
     function handleRenameDocument(id: string, newTitle: string) {
         setDocuments(docs => docs.map(doc => doc.id === id ? { ...doc, title: newTitle } : doc));
     }
+    function handleDeleteDocument(id: string) {
+        setDocuments((docs) => {
+            if (docs.length === 1) return docs; // Prevent deleting last file
+            const idx = docs.findIndex(doc => doc.id === id);
+            if (idx === -1) return docs;
+            const newDocs = docs.filter(doc => doc.id !== id);
+            // If the deleted doc was active, select previous, next, or first
+            if (id === activeDocumentId) {
+                const newIdx = idx > 0 ? idx - 1 : 0;
+                setActiveDocumentId(newDocs[newIdx].id);
+            }
+            return newDocs;
+        });
+    }
 
     const [viewMode, setViewMode] = useState<ViewMode>("split");
     const [leftWidth, setLeftWidth] = useState(50); // percent
@@ -213,6 +227,7 @@ export default function Editor() {
                         onSelect={handleSelectDocument}
                         onNewFile={handleNewFile}
                         onRename={handleRenameDocument}
+                        onDelete={handleDeleteDocument}
                     />
                 </div>
                 {/* Editor + Preview */}
