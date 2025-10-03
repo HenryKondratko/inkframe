@@ -228,7 +228,7 @@ export default function Editor() {
         <div className="flex flex-col h-full">
             {/* Toolbar */}
             <div className="flex items-center justify-between px-4 h-16 border-b-2 border-primary dark:border-b dark:border-surfaceDark bg-background dark:bg-backgroundDark">
-                <h1 className="text-lg font-semibold text-primary dark:text-primaryDark">Inkframe</h1>
+                <h1 className="text-2xl font-bold text-primary dark:text-primaryDark">Inkframe</h1>
                 <div className="space-x-2 flex items-center">
                     <button
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

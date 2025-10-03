@@ -143,7 +143,7 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                                         </button>
                                         {documents.length > 1 && (
                                             <button
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-100 dark:hover:bg-red-900"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-100 dark:hover:bg-red-900 ml-3"
                                                 title="Delete file"
                                                 onClick={e => { e.stopPropagation(); onDelete(doc.id); }}
                                                 tabIndex={-1}
@@ -155,7 +155,7 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                                         )}
                                         {/* Download button, always shown on hover */}
                                         <button
-                                            className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900"
+                                            className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 mr-1"
                                             title="Download file"
                                             onClick={e => { e.stopPropagation(); onDownload && onDownload(doc.id); }}
                                             tabIndex={-1}
