@@ -39,7 +39,7 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
     }
 
     return (
-        <aside className="flex flex-col h-full w-56 bg-surface dark:bg-surfaceDark border-r border-surface dark:border-surfaceDark">
+        <aside className="flex flex-col h-full w-56 bg-surface dark:bg-surfaceDark border-r border-gray-200 dark:border-surfaceDark shadow-sm">
             <div className="flex-1 overflow-y-auto">
                 <ul className="py-2">
                     {documents.map((doc, idx) => (
@@ -56,11 +56,11 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                             ) : (
                                 <>
                                     <button
-                                        className={`w-full text-left px-4 py-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark ${
-                                            doc.id === activeDocumentId
+                                        className={`w-full text-left px-4 py-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark
+                                            ${doc.id === activeDocumentId
                                                 ? "bg-primary text-white dark:bg-primaryDark"
-                                                : "hover:bg-surfaceDark/20 dark:hover:bg-backgroundDark/20 text-text dark:text-textDark"
-                                        }`}
+                                                : "bg-transparent hover:bg-gray-100 dark:hover:bg-backgroundDark/20 text-text dark:text-textDark"}
+                                        `}
                                         onClick={() => onSelect(doc.id)}
                                         onDoubleClick={() => startRenaming(doc.id, doc.title)}
                                         title="Double-click to rename"
