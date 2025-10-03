@@ -12,12 +12,17 @@ interface SidebarProps {
     onNewFile: () => void;
     onRename: (id: string, newTitle: string) => void;
     onDelete: (id: string) => void;
-    onDownload?: (id: string) => void; // Added download handler
+    onDownload?: (id: string) => void;
+    onReorder?: (newOrder: Document[]) => void; // New prop for reordering
 }
 
-export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFile, onRename, onDelete, onDownload, open = true, setOpen }: SidebarProps & { open?: boolean, setOpen?: (open: boolean) => void }) {
+export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFile, onRename, onDelete, onDownload, onReorder, open = true, setOpen }: SidebarProps & { open?: boolean, setOpen?: (open: boolean) => void }) {
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState("");
+
+    // Drag and drop state
+    const [draggedId, setDraggedId] = useState<string | null>(null);
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
 
     function startRenaming(id: string, currentTitle: string) {
         setRenamingId(id);
@@ -37,6 +42,31 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
             setRenamingId(null);
             setRenameValue("");
         }
+    }
+
+    function handleDragStart(id: string) {
+        setDraggedId(id);
+    }
+    function handleDragOver(id: string, e: React.DragEvent) {
+        e.preventDefault();
+        setDragOverId(id);
+    }
+    function handleDrop(id: string) {
+        if (!draggedId || draggedId === id) return;
+        const fromIdx = documents.findIndex(d => d.id === draggedId);
+        const toIdx = documents.findIndex(d => d.id === id);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const newDocs = [...documents];
+        const [moved] = newDocs.splice(fromIdx, 1);
+        if (!moved) return; // Type safety: moved is Document | undefined
+        newDocs.splice(toIdx, 0, moved);
+        setDraggedId(null);
+        setDragOverId(null);
+        if (onReorder) onReorder(newDocs);
+    }
+    function handleDragEnd() {
+        setDraggedId(null);
+        setDragOverId(null);
     }
 
     return (
@@ -59,7 +89,13 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                 <div className="flex-1 overflow-y-auto">
                     <ul className="py-2">
                         {documents.map((doc, idx) => (
-                            <li key={doc.id} className="group relative flex items-center">
+                            <li key={doc.id} className={`group relative flex items-center ${dragOverId === doc.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                                draggable
+                                onDragStart={() => handleDragStart(doc.id)}
+                                onDragOver={e => handleDragOver(doc.id, e)}
+                                onDrop={() => handleDrop(doc.id)}
+                                onDragEnd={handleDragEnd}
+                            >
                                 {renamingId === doc.id ? (
                                     <input
                                         className={`w-full px-4 py-2 rounded bg-background dark:bg-backgroundDark text-text dark:text-textDark border border-accent focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark`}

@@ -99,6 +99,17 @@ export default function Editor() {
         });
     }
 
+    // Handle reordering of documents
+    function handleReorder(newOrder: {id: string, title: string}[]) {
+        // Merge new order with existing content
+        setDocuments(docs => {
+            return newOrder.map(doc => {
+                const fullDoc = docs.find(d => d.id === doc.id);
+                return fullDoc ? fullDoc : doc;
+            });
+        });
+    }
+
     const [viewMode, setViewMode] = useState<ViewMode>("split");
     const [leftWidth, setLeftWidth] = useState(50); // percent
     const [dragging, setDragging] = useState(false);
@@ -258,6 +269,7 @@ export default function Editor() {
                     onRename={handleRenameDocument}
                     onDelete={handleDeleteDocument}
                     onDownload={handleDownload}
+                    onReorder={handleReorder}
                     open={sidebarOpen}
                     setOpen={setSidebarOpen}
                 />
