@@ -23,6 +23,7 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
     // Drag and drop state
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [dragOverId, setDragOverId] = useState<string | null>(null);
+    const [dragOverPosition, setDragOverPosition] = useState<'above' | 'below' | null>(null);
 
     function startRenaming(id: string, currentTitle: string) {
         setRenamingId(id);
@@ -49,7 +50,12 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
     }
     function handleDragOver(id: string, e: React.DragEvent) {
         e.preventDefault();
+        const target = e.currentTarget as HTMLElement;
+        const rect = target.getBoundingClientRect();
+        const offset = e.clientY - rect.top;
+        const position = offset < rect.height / 2 ? 'above' : 'below';
         setDragOverId(id);
+        setDragOverPosition(position);
     }
     function handleDrop(id: string) {
         if (!draggedId || draggedId === id) return;
@@ -58,15 +64,25 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
         if (fromIdx === -1 || toIdx === -1) return;
         const newDocs = [...documents];
         const [moved] = newDocs.splice(fromIdx, 1);
-        if (!moved) return; // Type safety: moved is Document | undefined
-        newDocs.splice(toIdx, 0, moved);
+        if (!moved) return;
+        let insertIdx = toIdx;
+        if (dragOverPosition === 'below') {
+            insertIdx = toIdx + (fromIdx < toIdx ? 0 : 1);
+        } else {
+            insertIdx = toIdx + (fromIdx < toIdx ? -1 : 0);
+        }
+        if (insertIdx < 0) insertIdx = 0;
+        if (insertIdx > newDocs.length) insertIdx = newDocs.length;
+        newDocs.splice(insertIdx, 0, moved);
         setDraggedId(null);
         setDragOverId(null);
+        setDragOverPosition(null);
         if (onReorder) onReorder(newDocs);
     }
     function handleDragEnd() {
         setDraggedId(null);
         setDragOverId(null);
+        setDragOverPosition(null);
     }
 
     return (
@@ -89,13 +105,19 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                 <div className="flex-1 overflow-y-auto">
                     <ul className="py-2">
                         {documents.map((doc, idx) => (
-                            <li key={doc.id} className={`group relative flex items-center ${dragOverId === doc.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                            <li key={doc.id} className={`group relative flex items-center`}
                                 draggable
                                 onDragStart={() => handleDragStart(doc.id)}
                                 onDragOver={e => handleDragOver(doc.id, e)}
                                 onDrop={() => handleDrop(doc.id)}
                                 onDragEnd={handleDragEnd}
                             >
+                                {/* Visual indicator for drop position */}
+                                {dragOverId === doc.id && dragOverPosition === 'above' && (
+                                    <div className="absolute left-0 right-0 top-0 h-1 pointer-events-none">
+                                        <div className="h-1 bg-blue-500 rounded-t" style={{boxShadow: '0 0 2px #3b82f6'}} />
+                                    </div>
+                                )}
                                 {renamingId === doc.id ? (
                                     <input
                                         className={`w-full px-4 py-2 rounded bg-background dark:bg-backgroundDark text-text dark:text-textDark border border-accent focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accentDark`}
@@ -143,6 +165,12 @@ export default function Sidebar({ documents, activeDocumentId, onSelect, onNewFi
                                             </svg>
                                         </button>
                                     </>
+                                )}
+                                {/* Visual indicator for drop position below */}
+                                {dragOverId === doc.id && dragOverPosition === 'below' && (
+                                    <div className="absolute left-0 right-0 bottom-0 h-1 pointer-events-none">
+                                        <div className="h-1 bg-blue-500 rounded-b" style={{boxShadow: '0 0 2px #3b82f6'}} />
+                                    </div>
                                 )}
                             </li>
                         ))}
